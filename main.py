@@ -46,6 +46,8 @@ def is_valid_url(url):
 # Routes
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    short_url = session.get('last_short_url', None)
+
     if request.method == 'POST':
         original_url = request.form.get('url')
 
@@ -56,9 +58,9 @@ def index():
         # Check for existing URL
         for short_code, url in url_mappings.items():
             if url == original_url:
+                session['last_short_url'] = request.host_url + short_code
                 flash('This URL already has a short code!', 'info')
-                return render_template('index.html',
-                                       short_url=request.host_url + short_code)
+                return redirect(url_for('index'))
 
         # Create new short URL
         short_code = generate_short_code()
@@ -66,10 +68,10 @@ def index():
         url_stats[short_code] = {'visits': 0, 'original_url': original_url}
         save_data(url_stats)
 
-        return render_template('index.html',
-                               short_url=request.host_url + short_code)
+        session['last_short_url'] = request.host_url + short_code
+        return redirect(url_for('index'))
 
-    return render_template('index.html')
+    return render_template('index.html', short_url=short_url)
 
 
 @app.route('/<short_code>')
@@ -88,6 +90,12 @@ def stats():
                           key=lambda x: x[1]['visits'],
                           reverse=True)
     return render_template('stats.html', stats=sorted_stats)
+
+
+@app.route('/clear')
+def clear_short_url():
+    session.pop('last_short_url', None)
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
