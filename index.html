@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center">
+    <h1 class="mb-4">URL Shortener</h1>
+    <form method="POST" action="{{ url_for('index') }}" class="mb-4">
+        <div class="input-group">
+            <input type="url" class="form-control" name="url"
+                   placeholder="https://example.com" required>
+            <button class="btn btn-primary" type="submit">Shorten</button>
+        </div>
+    </form>
+
+    {% if short_url %}
+    <div class="url-card card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Your Short URL</h5>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" value="{{ short_url }}"
+                       id="shortUrl" readonly>
+                <button class="btn btn-outline-secondary" onclick="copyToClipboard()">
+                    Copy
+                </button>
+            </div>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a href="{{ short_url }}" target="_blank" class="btn btn-success">
+                    Test It
+                </a>
+                <a href="{{ url_for('stats') }}" class="btn btn-info">
+                    View Stats
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function copyToClipboard() {
+        const copyText = document.getElementById("shortUrl");
+        copyText.select();
+        document.execCommand("copy");
+        const btn = copyText.nextElementSibling;
+        btn.textContent = "Copied!";
+        setTimeout(() => btn.textContent = "Copy", 2000);
+    }
+</script>
+{% endblock %}
